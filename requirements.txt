@@ -1,0 +1,7 @@
+twilio~=9.2.1
+python-dotenv
+langchain_community
+langchain_core
+langchain_openai
+openai
+flask
