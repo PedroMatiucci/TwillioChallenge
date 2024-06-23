@@ -1,10 +1,19 @@
 from flask import Flask, request, jsonify, redirect
 from twilio.twiml.messaging_response import MessagingResponse
 from textSpeech.convert import Convert
+import requests
+import os
+from dotenv import load_dotenv
+
 
 # ngrok http --domain=martin-polished-remarkably.ngrok-free.app 8080
 app = Flask(__name__)
 
+load_dotenv()
+account_sid = os.getenv("TWILIO_ACCOUNT_SID")
+auth_token = os.getenv("TWILIO_AUTH_TOKEN")
+username = account_sid
+password = auth_token
 
 @app.route('/whatsapp', methods=['GET', 'POST'])
 def whatsapp_reply():
@@ -13,20 +22,11 @@ def whatsapp_reply():
         data = request.form.to_dict()
     except Exception as e:
         print(e)
-    print(data)
     query = data['Body']
     sender_id = data['From']
-    print(sender_id)
-    print(query)
-    print(f'Sender id - {sender_id}')
-    # get the user
-    # if not create
-    # create chat_history from the previous conversations
-    # question and answer
     if 'MediaUrl0' in data.keys():
-        print(data['MediaUrl0'])
-        #audio_test = conversor.speech_to_text(data['MediaUrl0'])
-        #print(audio_test)
+        audio_test = conversor.speech_to_text(data['MediaUrl0'],)
+        print(audio_test)
     return 'OK', 200
 #         transcript = transcript_audio(data['MediaUrl0'])
 #         if transcript['status'] == 1:
