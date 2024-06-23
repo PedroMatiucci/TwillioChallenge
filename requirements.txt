@@ -6,3 +6,7 @@ langchain_openai
 openai
 flask
 whatsapp_voice_bot
+requests
+uuid
+config
+soundfile
