@@ -7,6 +7,8 @@ import os
 from dotenv import load_dotenv
 from twilio.rest import Client
 from google.cloud import storage
+from twilio.twiml.messaging_response import Body, Media, Message, MessagingResponse
+
 
 # ngrok http --domain=martin-polished-remarkably.ngrok-free.app 8080
 app = Flask(__name__)
@@ -25,6 +27,7 @@ password = auth_token
 conversor = Convert()
 
 
+audio_url = "https://storage.googleapis.com/twillio-script-bucket/audio.ogg"
 @app.route('/whatsapp', methods=['GET', 'POST'])
 def whatsapp_reply():
     data = request.form.to_dict()
@@ -32,18 +35,23 @@ def whatsapp_reply():
     sender_id = data['From']
     print(sender_id)
     chatbot = Chatbot(sender_id)
+    response_twilio = MessagingResponse()
     if 'MediaUrl0' in data.keys():
         audio_text = conversor.speech_to_text(data['MediaUrl0'], )
         print(audio_text)
         response = chatbot.response_question(audio_text)
         conversor.text_to_speech(response)
-        upload_to_gcs(BUCKET_NAME, SOURCE_FILE_PATH, DESTINATION_BLOB_NAME, CREDENTIALS_FILE)
-        send_audio_message(sender_id)
+        path = upload_to_gcs(BUCKET_NAME, SOURCE_FILE_PATH, DESTINATION_BLOB_NAME, CREDENTIALS_FILE)
+        msg = response_twilio.message(response)
+        msg.media(audio_url)
+        #send_audio_message(sender_id)
     else:
         response = chatbot.response_question(text_message)
-        send_text_message(sender_id, response)
+
+        msg = response_twilio.message(response)
+        #send_text_message(sender_id, response)
         print('Message sent.')
-    return 'OK', 200
+    return str(response_twilio)
 
 
 def send_text_message(to_number, text_message):
@@ -54,12 +62,14 @@ def send_text_message(to_number, text_message):
     )
 
 def send_audio_message(to_number):
-    audio_url = f"https://storage.cloud.google.com/twillio-script-bucket/audio.ogg"
-    client.messages.create(
-        media_url=audio_url,
+    audio_url = "https://storage.googleapis.com/twillio-script-bucket/audio.ogg"
+    test = client.messages.create(
+        media_url=[audio_url],
+        body = 'test',
         from_=from_number,
         to=to_number,
     )
+    print(test.sid)
 
 def upload_to_gcs(bucket_name, source_file_path, destination_blob_name, credentials_file):
     # Initialize the Google Cloud Storage client with the credentials
@@ -70,9 +80,15 @@ def upload_to_gcs(bucket_name, source_file_path, destination_blob_name, credenti
 
     # Upload the file to the bucket
     blob = bucket.blob(destination_blob_name)
-    blob.upload_from_filename(source_file_path)
-
+    blob.upload_from_filename(source_file_path, content_type='audio/ogg')
     print(f"File {source_file_path} uploaded to gs://{bucket_name}/{destination_blob_name}")
+    # Verify the content type
+    blob.reload()
+    print(f'Verified Content-Type: {blob.content_type}')
+
+    # Return the public URL of the uploaded file
+    print(blob.public_url)
+    return blob.public_url
 
 
 

@@ -18,6 +18,7 @@ class Convert:
         self.password = auth_token
 
     def speech_to_text(self, media_url):
+        mp3_file_path = f'files/{uuid.uuid1()}.mp3'
         path = self.convert_to_mp3(media_url)
         audio_file = open(path, "rb")
         transcription = self.client.audio.transcriptions.create(
@@ -26,6 +27,7 @@ class Convert:
             language='en'
         )
         transcription_text = transcription.text
+        os.unlink(mp3_file_path)
         return transcription_text
 
     def text_to_speech(self, text):
