@@ -10,3 +10,7 @@ requests
 uuid
 config
 soundfile
+requests
+operator
+google-cloud-storage
+pydub

@@ -4,10 +4,10 @@ import requests
 import uuid
 import soundfile as sf
 import os
+from pathlib import Path
+from pydub import AudioSegment
 
 
-
-## only a test
 class Convert:
     def __init__(self):
         self.client = OpenAI()
@@ -22,21 +22,24 @@ class Convert:
         audio_file = open(path, "rb")
         transcription = self.client.audio.transcriptions.create(
             model="whisper-1",
-            file=audio_file
+            file=audio_file,
+            language='en'
         )
         transcription_text = transcription.text
         return transcription_text
 
     def text_to_speech(self, text):
-        response = self.client.audio.with_streaming_response.speech.create(
+        path = r"C:\Users\pmati\DataspellProjects\TwillioChallenge\audiosGenerated\audio.mp3"
+        response = self.client.audio.speech.create(
             model="tts-1",
             voice="alloy",
-            input=text
+            input=text,
+            response_format="mp3"
         )
-        response.stream_to_file(self.speech_file_path)
+        response.stream_to_file(path)
+        self.convert_to_ogg(path)
+        return path
 
-
-##descobrir como autenticar os arquivos de audio
     def convert_to_mp3(self, media_url):
         try:
             ogg_file_path = f'files/{uuid.uuid1()}.ogg'
@@ -53,3 +56,9 @@ class Convert:
             print('Error at transcript_audio...')
             print(e)
             return None
+
+    def convert_to_ogg(self, source_file):
+        destination = f'audiosGenerated/audio.ogg'
+        segment = AudioSegment.from_mp3(source_file)
+        segment.export(destination, format="ogg", codec='libopus')
+
