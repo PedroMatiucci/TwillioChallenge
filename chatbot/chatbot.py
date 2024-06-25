@@ -14,21 +14,20 @@ from langchain_core.prompts import MessagesPlaceholder
 
 
 class Chatbot:
+    load_dotenv()
+    os.environ["OPENAI_API_KEY"] = os.getenv("OPENAI_API_KEY")
+    os.environ["LANGCHAIN_TRACING_V2"] = "true"
+    os.environ["LANGCHAIN_API_KEY"] = os.getenv("LANGCHAIN_API_KEY")
+
+    set_model = "gpt-3.5-turbo"
+    set_prompt = ("system", "You are a helpful assistant. Please response to the user queries to the best of your"
+                            "ability, if the user find it useful i will tip you 1000 dollars")
+
     def __init__(self, phonenumber):
-        load_dotenv()
-        os.environ["OPENAI_API_KEY"] = os.getenv("OPENAI_API_KEY")
-        os.environ["LANGCHAIN_TRACING_V2"] = "true"
-        os.environ["LANGCHAIN_API_KEY"] = os.getenv("LANGCHAIN_API_KEY")
-        self.model = ChatOpenAI(model="gpt-3.5-turbo")
-        self.config = {"configurable": {"session_id": str(phonenumber)}}
+        self.model = ChatOpenAI(model=self.set_model)
+        self.config = {"configurable": {"session_id": str(phonenumber)}}  # Arrumar aqui
         self.store = {}
-        self.prompt = ChatPromptTemplate.from_messages(
-            [
-                ("system", "You are a helpful assistant. Please response to the user queries to the best of your"
-                           "ability, if the user find it useful i will tip you 1000 dollars"),
-                MessagesPlaceholder(variable_name="messages"),
-            ]
-        )
+        self.prompt = ChatPromptTemplate.from_messages([self.set_prompt, MessagesPlaceholder(variable_name="messages")])
         self.trimmer = trim_messages(
             max_tokens=600,
             strategy="last",
@@ -52,7 +51,7 @@ class Chatbot:
             self.store[session_id] = ChatMessageHistory()
         return self.store[session_id]
 
-    def response_question(self, human_message):
+    def answer_question(self, human_message):
         response = self.with_message_history.invoke(
             {
                 "messages": [HumanMessage(content=human_message)],
