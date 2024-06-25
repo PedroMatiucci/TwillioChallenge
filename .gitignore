@@ -243,3 +243,4 @@ fabric.properties
 .idea/inspectionProfiles/profiles_settings.xml
 .idea/modules.xml
 /audios/files/
+credentials.json
