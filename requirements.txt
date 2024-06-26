@@ -15,3 +15,7 @@ operator
 google-cloud-storage
 pydub
 google
+bs4
+langchain.text_splitter
+langchain.chains
+chromadb

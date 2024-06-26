@@ -26,7 +26,7 @@ class TextSpeech:
         transcription = self.client.audio.transcriptions.create(
             model="whisper-1",
             file=audio_file,
-            language='en'
+            language='pt'
         )
         transcription_text = transcription.text
         self.mp3_delete = path
